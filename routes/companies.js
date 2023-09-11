@@ -56,13 +56,13 @@ router.post("/", async function(req,res, next){
 
 router.patch("/:code", async function (req, res, next) {
     try {
-      const { code, name, description } = req.body;
+      const {name, description } = req.body;
   
       const result = await db.query(
-            `UPDATE companies SET code=$1, name=$2, description=$3
-             WHERE code = $4
+            `UPDATE companies SET name=$1, description=$2
+             WHERE code = $3
              RETURNING code, name, description`,
-          [code ,name, description, req.params.code]
+          [name, description, req.params.code]
       );
   
       return res.json(result.rows[0]);
@@ -73,17 +73,45 @@ router.patch("/:code", async function (req, res, next) {
     }
   });
 
+router.put("/:code", async function (req, res, next) {
+    try {
+      const {name, description } = req.body;
+  
+      const result = await db.query(
+            `UPDATE companies SET name=$1, description=$2
+             WHERE code = $3
+             RETURNING code, name, description`,
+          [name, description, req.params.code]
+      );
+  
+      return res.json(result.rows[0]);
+    }
+  
+    catch (err) {
+      return next(err);
+    }
+  });
+
+  router.delete("/:code", async function (req, res, next) {
+    try {
+      const {code} = req.params;
+  
+      const result = await db.query(
+        "DELETE FROM companies WHERE code = $1",
+        [code]
+            
+      );
+  
+      return res.json({message: "Deleted"});
+    }
+  
+    catch (err) {
+      return next(err);
+    }
+  });
+
 /*
 
-
-PUT /companies/[code]
-Edit existing company.
-
-Should return 404 if company cannot be found.
-
-Needs to be given JSON like: {name, description}
-
-Returns update company object: {company: {code, name, description}}
 
 DELETE /companies/[code]
 Deletes company.
