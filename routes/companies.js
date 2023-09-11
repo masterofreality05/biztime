@@ -19,9 +19,9 @@ try {
 
 });
 
-router.get("/search", async function(req, res, next){
+router.get("/search/:code", async function(req, res, next){
     try {
-        const code = req.query.code
+        const {code} = req.params
         const results = await db.query(
             `SELECT * FROM companies  WHERE code=$1`, [code]);
 
@@ -104,22 +104,10 @@ router.put("/:code", async function (req, res, next) {
   
       return res.json({message: "Deleted"});
     }
-  
+
     catch (err) {
       return next(err);
     }
   });
 
-/*
-
-
-DELETE /companies/[code]
-Deletes company.
-
-Should return 404 if company cannot be found.
-
-Returns {status: "deleted"}
-
-
-*/
 module.exports = router;
