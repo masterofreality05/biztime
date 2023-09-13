@@ -2,6 +2,8 @@ const express = require("express");
 const router = new express.Router();
 const db = require("../db");
 const ExpressError = require("../expressError");
+let date_ob = new Date();
+let date = (date_ob.getFullYear() + "-" + date_ob.getMonth() + "-" + date_ob.getDay())
 
 
 router.get("/", async function(req, res, next) {
@@ -53,7 +55,17 @@ router.post("/", async function(req,res, next){
 
 router.put("/:id", async function (req, res, next) {
     try {
-    const {comp_code, amt, paid, add_date, paid_date} = req.body;
+    let {comp_code, amt, paid, add_date, paid_date} = req.body;
+
+    const selectedInvoice = await db.query(
+        `SELECT * FROM invoices WHERE id = $1`, [req.params.id]
+    )
+    console.log(selectedInvoice.rows[0].paid)
+    if(selectedInvoice.rows[0].paid == false){
+        console.log("trueeeeeee")
+        paid = true
+        paid_date = date
+    } 
   
       const result = await db.query(
             `UPDATE invoices SET comp_code=$1, amt=$2, paid=$3, add_date=$4, paid_date=$5
@@ -61,6 +73,9 @@ router.put("/:id", async function (req, res, next) {
              RETURNING *`,
           [comp_code, amt, paid, add_date, paid_date, req.params.id]
       );
+      if(result.rows.length === 0){
+        throw new ExpressError("The invoice could not be found", 404)
+      }
   
       return res.json(result.rows[0]);
     }
